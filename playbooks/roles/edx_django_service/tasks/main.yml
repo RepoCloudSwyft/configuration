@@ -61,6 +61,13 @@
     - install
     - install:configuration
 
+- name: install python3.8
+  command: apt-add-repository -y ppa:deadsnakes/ppa | apt-get update && apt-get install -y python3.8-dev python3.8-distutils
+  when: edx_django_service_use_python38 and not edx_django_service_enable_experimental_docker_shim
+  tags:
+    - install
+    - install:system-requirements
+
 - name: install python3
   apt:
     name: "{{ item }}"
@@ -71,6 +78,17 @@
   tags:
     - install
     - install:system-requirements
+
+- name: build virtualenv with python3.8
+  command: "virtualenv --python=python3.8 {{ edx_django_service_venv_dir }}"
+  args:
+    creates: "{{ edx_django_service_venv_dir }}/bin/pip"
+  become_user: "{{ edx_django_service_user }}"
+  when: edx_django_service_use_python38 and not edx_django_service_enable_experimental_docker_shim
+  tags:
+    - install
+    - install:system-requirements
+
 
 - name: build virtualenv with python3
   command: "virtualenv --python=python3 {{ edx_django_service_venv_dir }}"
